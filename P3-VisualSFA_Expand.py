@@ -47,15 +47,15 @@ slow = flow(x)
 
 plt.figure()
 plt.subplot(1,3,1)
-plt.plot(np.arange(series_length-1), slow[:,0], \
+plt.plot(np.arange(series_length-1)*4*np.pi/512, slow[:,0], \
     label = '{:4.2f}'.format(flow[-1].get_eta(t=series_length)[0]))
 plt.legend()
 plt.subplot(1,3,2)
-plt.plot(np.arange(series_length-1), slow[:,1], \
+plt.plot(np.arange(series_length-1)*4*np.pi/512, slow[:,1], \
     label = '{:4.2f}'.format(flow[-1].get_eta(t=series_length)[1]))
 plt.legend()
 plt.subplot(1,3,3)
-plt.plot(np.arange(series_length-1), slow[:,2], \
+plt.plot(np.arange(series_length-1)*4*np.pi/512, slow[:,2], \
     label = '{:4.2f}'.format(flow[-1].get_eta(t=series_length)[2]))
 plt.legend()
 
