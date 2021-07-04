@@ -45,26 +45,26 @@ scales = np.arange(1, N)
 plt.figure()
 data_number = 0
 for i in range(9):
-  signal = train_signals[data_number,:,i]
-  [coefficients, frequencies] = pywt.cwt(signal, scales, 'morl', dt)
-  power = (abs(coefficients)) ** 2
-  period = 1. / frequencies
-  levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
-  contourlevels = np.log2(levels)
-  fig, ax = plt.subplots()
-  im = ax.contourf(time, np.log2(period), np.log2(power), contourlevels, extend='both')
-  ax.set_title('Wavelet Transform (Power Spectrum) of signal', fontsize=20)
-  ax.set_ylabel('Period', fontsize=18)
-  ax.set_xlabel('Time', fontsize=18)
-  yticks = 2**np.arange(np.ceil(np.log2(period.min())), np.ceil(np.log2(period.max())))
-  ax.set_yticks(np.log2(yticks))
-  ax.set_yticklabels(yticks)
-  ax.invert_yaxis()
-  ylim = ax.get_ylim()
-  ax.set_ylim(ylim[0], -1)
-  cbar_ax = fig.add_axes([0.95, 0.5, 0.03, 0.25])
-  fig.colorbar(im, cax=cbar_ax, orientation='vertical')
-  plt.show()
+    signal = train_signals[data_number,:,i]
+    [coefficients, frequencies] = pywt.cwt(signal, scales, 'morl', dt)
+    power = (abs(coefficients)) ** 2
+    period = 1. / frequencies
+    levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
+    contourlevels = np.log2(levels)
+    fig, ax = plt.subplots()
+    im = ax.contourf(time, np.log2(period), np.log2(power), contourlevels, extend='both')
+    ax.set_title('Wavelet Transform (Power Spectrum) of signal', fontsize=20)
+    ax.set_ylabel('Period', fontsize=18)
+    ax.set_xlabel('Time', fontsize=18)
+    yticks = 2**np.arange(np.ceil(np.log2(period.min())), np.ceil(np.log2(period.max())))
+    ax.set_yticks(np.log2(yticks))
+    ax.set_yticklabels(yticks)
+    ax.invert_yaxis()
+    ylim = ax.get_ylim()
+    ax.set_ylim(ylim[0], -1)
+    cbar_ax = fig.add_axes([0.95, 0.5, 0.03, 0.25])
+    fig.colorbar(im, cax=cbar_ax, orientation='vertical')
+    plt.show()
 
 scales = range(1,N)
 waveletname = 'morl'
