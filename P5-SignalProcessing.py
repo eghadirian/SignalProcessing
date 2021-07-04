@@ -64,7 +64,8 @@ for i in range(9):
     levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
     contourlevels = np.log2(levels)
     fig, ax = plt.subplots()
-    im = ax.contourf(time, np.log2(period), np.log2(power), contourlevels, extend='both')
+    im = ax.contourf(time, np.log2(period), np.log2(power), contourlevels, \
+        extend='both', cmap='seismic')
     ax.set_title('Wavelet Transform (Power Spectrum) of signal', fontsize=20)
     ax.set_ylabel('Period', fontsize=18)
     ax.set_xlabel('Time', fontsize=18)
