@@ -11,16 +11,17 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
 from tensorflow import keras
-from keras.layers import Dense, Flatten
-from keras.layers import Conv2D, MaxPooling2D
+from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, Dropout
 from keras.models import Sequential
 from keras.callbacks import History
-from keras.layers import BatchNormalization
-from keras.layers import Dropout
 
 activities = ['WALKING', 'WALKING_UPSTAIRS', \
               'WALKING_DOWNSTAIRS', 'SITTING', \
               'STANDING', 'LAYING']
+comp = ['Body Acceleration, X', 'Body Acceleration, Y', 'Body Acceleration, Z',\
+        'Body Gyroscope, X', 'Body Gyroscope, Y', 'Body Gyroscope, Z',\
+        'Total Acceleration, X', 'Total Acceleration, Y', 'Total Acceleration, Z']
+
 train_signals, test_signals = [], []
 for input_file in os.listdir('UCI HAR Dataset/train/Inertial Signals/'):
         signal = pd.read_csv('UCI HAR Dataset/train/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
@@ -34,7 +35,18 @@ test_signals = np.transpose(np.array(test_signals), (1, 2, 0))
 y_test = pd.read_csv('UCI HAR Dataset/test/y_test.txt', header=None)
 
 train_signals, test_signals, y_train, y_test = train_test_split(np.concatenate((train_signals, test_signals)),\
-        np.concatenate((y_train, y_test)), test_size=2947, random_state=42)
+        np.concatenate((y_train, y_test)), test_size=len(y_test), random_state=42)
+
+np.random.seed(42)
+plt.figure()
+for i in range(10):
+    rnd1 = np.random.randint(0, len(y_train))
+    rnd2 = np.random.randint(0, 9)
+    fig, ax = plt.subplots()
+    ax.plot(train_signals[rnd1,:, rnd2])
+    ax.set_title('sample number '+str(rnd1+1)+', component: "'\
+        +comp[rnd2+1]+'", label: "'+activities[int(y_train.to_numpy()[rnd1])-1]+'"')
+    plt.show()
 
 t0 = 0
 HZ = 50
@@ -43,7 +55,7 @@ N = np.shape(train_signals)[1]
 time = np.arange(0, N) * dt + t0
 scales = np.arange(1, N)
 plt.figure()
-data_number = 0
+data_number = np.random.randint(0, len(y_train))
 for i in range(9):
     signal = train_signals[data_number,:,i]
     [coefficients, frequencies] = pywt.cwt(signal, scales, 'morl', dt)
@@ -82,7 +94,7 @@ for ii in range(0,train_size):
         train_data_cwt[ii, :, :, jj] = coeff_
 test_data_cwt = np.ndarray(shape=(test_size, N-1, N-1, n_comp))
 for ii in range(0,test_size):
-    if ii % 100 == 0:
+    if ii % 1000 == 0:
         print(ii)
     for jj in range(0,n_comp):
         signal = test_signals[ii, :, jj]
@@ -137,3 +149,17 @@ train_score = model.evaluate(x_train, y_train, verbose=0)
 print('Train loss: {}, Train accuracy: {}'.format(train_score[0], train_score[1]))
 test_score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss: {}, Test accuracy: {}'.format(test_score[0], test_score[1]))
+
+plt.figure()
+plt.plot(history.history['loss'], label='training loss')
+plt.plot(history.history['val_loss'], label='validation loss')
+plt.ylabel('loss')
+plt.xlabel('No. epoch')
+plt.legend(loc='upper left')
+plt.figure()
+plt.plot(history.history['accuracy'], label='training accuracy')
+plt.plot(history.history['val_accuracy'], label='validation accuracy')
+plt.ylabel('accuracy')
+plt.xlabel('No. epoch')
+plt.legend(loc='upper left')
+plt.show()
