@@ -8,36 +8,37 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import pywt
 import pandas as pd 
-from sklearn.decomposition import PCA 
-from sklearn.neural_network import MLPClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
 import os
 from tensorflow import keras
 from keras.layers import Dense, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.models import Sequential
 from keras.callbacks import History
+from keras.layers import BatchNormalization
+from keras.layers import Dropout
 
 activities = ['WALKING', 'WALKING_UPSTAIRS', \
               'WALKING_DOWNSTAIRS', 'SITTING', \
               'STANDING', 'LAYING']
 train_signals, test_signals = [], []
 for input_file in os.listdir('UCI HAR Dataset/train/Inertial Signals/'):
-  signal = pd.read_csv('UCI HAR Dataset/train/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
-  train_signals.append(signal)
+        signal = pd.read_csv('UCI HAR Dataset/train/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
+        train_signals.append(signal)
 train_signals = np.transpose(np.array(train_signals), (1, 2, 0))
 y_train = pd.read_csv('UCI HAR Dataset/train/y_train.txt', header=None)
 for input_file in os.listdir('UCI HAR Dataset/test/Inertial Signals/'):
-  signal = pd.read_csv('UCI HAR Dataset/test/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
-  test_signals.append(signal)
+        signal = pd.read_csv('UCI HAR Dataset/test/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
+        test_signals.append(signal)
 test_signals = np.transpose(np.array(test_signals), (1, 2, 0))
 y_test = pd.read_csv('UCI HAR Dataset/test/y_test.txt', header=None)
 
-t0 =0
+train_signals, test_signals, y_train, y_test = train_test_split(np.concatenate((train_signals, test_signals)),\
+        np.concatenate((y_train, y_test)), test_size=2947, random_state=42)
+
+t0 = 0
 HZ = 50
-dt=1/HZ
+dt= 1/HZ
 N = np.shape(train_signals)[1]
 time = np.arange(0, N) * dt + t0
 scales = np.arange(1, N)
@@ -45,7 +46,7 @@ plt.figure()
 data_number = 0
 for i in range(9):
   signal = train_signals[data_number,:,i]
-  [coefficients, frequencies] = pywt.cwt(signal, scales, 'cmor', dt)
+  [coefficients, frequencies] = pywt.cwt(signal, scales, 'morl', dt)
   power = (abs(coefficients)) ** 2
   period = 1. / frequencies
   levels = [0.0625, 0.125, 0.25, 0.5, 1, 2, 4, 8]
@@ -67,27 +68,27 @@ for i in range(9):
 
 scales = range(1,N)
 waveletname = 'morl'
-train_size = np.shape(train_signals)[0]
-test_size= np.shape(test_signals)[0]
+train_size = np.shape(train_signals)[0] # 5000 on colab
+test_size= np.shape(test_signals)[0] # 500 on colab
 n_comp = np.shape(train_signals)[2]
 train_data_cwt = np.ndarray(shape=(train_size, N-1, N-1, n_comp))
 for ii in range(0,train_size):
-  if ii % 1000 == 0:
-    print(ii)
-  for jj in range(0,n_comp):
-    signal = train_signals[ii, :, jj]
-    coeff, freq = pywt.cwt(signal, scales, waveletname, 1)
-    coeff_ = coeff[:,:N-1]
-    train_data_cwt[ii, :, :, jj] = coeff_
+    if ii % 1000 == 0:
+        print(ii)
+    for jj in range(0,n_comp):
+        signal = train_signals[ii, :, jj]
+        coeff, freq = pywt.cwt(signal, scales, waveletname, 1)
+        coeff_ = coeff[:,:N-1]
+        train_data_cwt[ii, :, :, jj] = coeff_
 test_data_cwt = np.ndarray(shape=(test_size, N-1, N-1, n_comp))
 for ii in range(0,test_size):
-  if ii % 1000 == 0:
-    print(ii)
-  for jj in range(0,n_comp):
-    signal = test_signals[ii, :, jj]
-    coeff, freq = pywt.cwt(signal, scales, waveletname, 1)
-    coeff_ = coeff[:,:N-1]
-    test_data_cwt[ii, :, :, jj] = coeff_
+    if ii % 100 == 0:
+        print(ii)
+    for jj in range(0,n_comp):
+        signal = test_signals[ii, :, jj]
+        coeff, freq = pywt.cwt(signal, scales, waveletname, 1)
+        coeff_ = coeff[:,:N-1]
+        test_data_cwt[ii, :, :, jj] = coeff_
 
 x_train = train_data_cwt
 x_test = test_data_cwt
@@ -112,9 +113,12 @@ model = Sequential([
     MaxPooling2D(pool_size=(2, 2), strides=(2, 2)),
     Conv2D(64, (5, 5), activation='relu'),
     MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(64, (5, 5), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
     Flatten(),
     BatchNormalization(),
     Dense(1000, activation='relu'),
+    Dropout(0.2),
     BatchNormalization(),
     Dense(num_classes, activation='softmax')
 ])
@@ -125,8 +129,10 @@ model.fit(x_train, y_train,
           batch_size=batch_size,
           epochs=epochs,
           verbose = 1,
-          validation_split = 0.1,
-          callbacks=[history])
+          validation_split = 0.2,
+          callbacks=[history],
+          use_multiprocessing=True)
+
 train_score = model.evaluate(x_train, y_train, verbose=0)
 print('Train loss: {}, Train accuracy: {}'.format(train_score[0], train_score[1]))
 test_score = model.evaluate(x_test, y_test, verbose=0)
