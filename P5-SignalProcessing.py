@@ -24,17 +24,20 @@ comp = ['Body Acceleration, X', 'Body Acceleration, Y', 'Body Acceleration, Z',\
 
 train_signals, test_signals = [], []
 for input_file in os.listdir('UCI HAR Dataset/train/Inertial Signals/'):
-        signal = pd.read_csv('UCI HAR Dataset/train/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
+        signal = pd.read_csv('UCI HAR Dataset/train/Inertial Signals/'+input_file, \
+            delim_whitespace=True, header=None)
         train_signals.append(signal)
 train_signals = np.transpose(np.array(train_signals), (1, 2, 0))
 y_train = pd.read_csv('UCI HAR Dataset/train/y_train.txt', header=None)
 for input_file in os.listdir('UCI HAR Dataset/test/Inertial Signals/'):
-        signal = pd.read_csv('UCI HAR Dataset/test/Inertial Signals/'+input_file, delim_whitespace=True, header=None)
+        signal = pd.read_csv('UCI HAR Dataset/test/Inertial Signals/'+input_file, \
+            delim_whitespace=True, header=None)
         test_signals.append(signal)
 test_signals = np.transpose(np.array(test_signals), (1, 2, 0))
 y_test = pd.read_csv('UCI HAR Dataset/test/y_test.txt', header=None)
 
-train_signals, test_signals, y_train, y_test = train_test_split(np.concatenate((train_signals, test_signals)),\
+train_signals, test_signals, y_train, y_test = train_test_split(\
+    np.concatenate((train_signals, test_signals)),\
         np.concatenate((y_train, y_test)), test_size=len(y_test), random_state=42)
 
 np.random.seed(42)
@@ -45,7 +48,7 @@ for i in range(10):
     fig, ax = plt.subplots()
     ax.plot(train_signals[rnd1,:, rnd2])
     ax.set_title('sample number '+str(rnd1+1)+', component: "'\
-        +comp[rnd2+1]+'", label: "'+activities[int(y_train.to_numpy()[rnd1])-1]+'"')
+        +comp[rnd2+1]+'", label: "'+activities[int(y_train[rnd1])-1]+'"')
     plt.show()
 
 t0 = 0
@@ -81,8 +84,8 @@ for i in range(9):
 
 scales = range(1,N)
 waveletname = 'morl'
-train_size = np.shape(train_signals)[0] # 5000 on colab
-test_size= np.shape(test_signals)[0] # 500 on colab
+train_size = np.shape(train_signals)[0] # 5000 # on colab
+test_size= np.shape(test_signals)[0] # 500 # on colab
 n_comp = np.shape(train_signals)[2]
 train_data_cwt = np.ndarray(shape=(train_size, N-1, N-1, n_comp))
 for ii in range(0,train_size):
