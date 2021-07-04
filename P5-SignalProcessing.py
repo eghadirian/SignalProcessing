@@ -167,3 +167,9 @@ plt.ylabel('accuracy')
 plt.xlabel('No. epoch')
 plt.legend(loc='upper left')
 plt.show()
+
+model.save('HumanActivityRecognition')
+
+model = keras.models.load_model('HumanActivityRecognition')
+
+model.summary()
