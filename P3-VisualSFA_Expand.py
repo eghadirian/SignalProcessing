@@ -8,11 +8,11 @@ series_length = 512
 t = np.linspace(0,4*np.pi,series_length)
 mean = 0
 std = 1
-a1 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=10)
-a2 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=10)
-a3 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=10)
-a4 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=10)
-a5 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=30)
+a1 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=15)
+a2 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=15)
+a3 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=15)
+a4 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=15)
+a5 = gaussian_filter(np.random.normal(mean, std, size = series_length), sigma=50)
 
 x1 = (4+a1)*np.sin(t+4*a3)
 x2 = (4+a2)*np.sin(t+4*a4)
@@ -32,6 +32,15 @@ plt.subplot(2,3,4)
 plt.plot(x1,x2)
 plt.subplot(2,3,5)
 plt.plot(x2,x3)
+
+plt.figure()
+plt.subplot(1,3,1)
+plt.plot(t,a1)
+plt.subplot(1,3,2)
+plt.plot(t,a2)
+plt.subplot(1,3,3)
+plt.plot(t,a5)
+
 
 flow = (
          mdp.nodes.EtaComputerNode() +
